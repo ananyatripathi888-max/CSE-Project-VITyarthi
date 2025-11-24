@@ -1,0 +1,9 @@
+Input Validation Module: Ensures that principal, rate, time, and compounding frequency are positive numeric values.
+
+User Input Module: Manages prompting the user all required inputs, incorporating validation, and optionally using saved defaults from the JSON file.
+
+Calculation Module: Contains the compound interest formula computation logic.
+
+Output Module: Displays the formatted calculation results to the console.
+
+Main Program Flow Module: Runs the program loop, orchestrating input, calculation, output, and interaction with the user.

@@ -1,28 +1,92 @@
-#compound interest calculator
-principle = 0
-rate = 0
-time =  0
+import json
+import os
 
-while True:
-    principle = float(input('enter the principle amount:'))
-    if principle<= 0:
-        print("principle cant be less than or equal to zero")
-    else:
-        break
+DATA_FILE = "compound_interest_data.json"
 
-while True:
-    rate = float(input('enter the interes rate:'))
-    if rate<= 0:
-        print("interest rate cant be less than or equal to zero")
-    else:
-        break
+def save_data(data):
+    with open(DATA_FILE, "w") as f:
+        json.dump(data, f)
 
-while True:
-    time = int(input('enter the time in years:'))
-    if time<= 0:
-        print("time cant be less than or equal to zero")
-    else:
-        break
+def load_data():
+    if os.path.exists(DATA_FILE):
+        with open(DATA_FILE, "r") as f:
+            return json.load(f)
+    return {}
 
-total = principle * pow((1 + rate / 100 ), time) 
-print(f"balance after {time} year/s : {total:2f} ")
+def validate_positive_float(value, name):
+    try:
+        val = float(value)
+        if val <= 0:
+            raise ValueError(f"{name} must be greater than zero.")
+        return val
+    except ValueError as e:
+        print(f"Invalid input for {name}: {e}")
+        return None
+
+def validate_positive_int(value, name):
+    try:
+        val = int(value)
+        if val <= 0:
+            raise ValueError(f"{name} must be greater than zero.")
+        return val
+    except ValueError as e:
+        print(f"Invalid input for {name}: {e}")
+        return None
+
+def get_user_inputs():
+    saved = load_data()
+    while True:
+        principal = input(f"Enter principal amount [{saved.get('principal', '')}]: ") or saved.get('principal')
+        principal = validate_positive_float(principal, "Principal")
+        if principal is None:
+            continue
+
+        rate = input(f"Enter annual interest rate (percentage) [{saved.get('rate', '')}]: ") or saved.get('rate')
+        rate = validate_positive_float(rate, "Interest Rate")
+        if rate is None:
+            continue
+
+        time = input(f"Enter time in years [{saved.get('time', '')}]: ") or saved.get('time')
+        time = validate_positive_int(time, "Time")
+        if time is None:
+            continue
+
+        n = input(f"Enter number of times interest is compounded per year [{saved.get('frequency', '')}]: ") or saved.get('frequency')
+        n = validate_positive_int(n, "Compounding Frequency")
+        if n is None:
+            continue
+
+        
+        save_data({'principal': principal, 'rate': rate, 'time': time, 'frequency': n})
+        return principal, rate, time, n
+
+def calculate_compound_interest(principal, rate, time, n):
+    amount = principal * pow((1 + rate / (100 * n)), n * time)
+    interest = amount - principal
+    return amount, interest
+
+def display_results(principal, rate, time, n, amount, interest):
+    print("\n--- Compound Interest Calculator Results ---\n")
+    print(f"Principal Amount: ${principal:.2f}")
+    print(f"Annual Interest Rate: {rate:.2f}%")
+    print(f"Time (Years): {time}")
+    print(f"Compounds per Year: {n}")
+    print(f"-------------------------------------------")
+    print(f"Total Amount after {time} years: ${amount:.2f}")
+    print(f"Total Interest Earned: ${interest:.2f}\n")
+
+def main():
+    print("Welcome to the Compound Interest Calculator!\n")
+    while True:
+        principal, rate, time, n = get_user_inputs()
+        total_amount, interest_earned = calculate_compound_interest(principal, rate, time, n)
+        display_results(principal, rate, time, n, total_amount, interest_earned)
+
+        cont = input("Would you like to calculate again? (yes/no): ").strip().lower()
+        if cont != 'yes':
+            print("Thank you for using the Compound Interest Calculator. Goodbye!")
+            break
+
+if __name__ == "__main__":
+    main()
+
